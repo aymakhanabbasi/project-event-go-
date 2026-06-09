@@ -1,0 +1,299 @@
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+/* ===================== FORWARD DECLARATION ===================== */
+class Event; // IMPORTANT FIX (solves compile error)
+
+/* ===================== SEAT CLASS ===================== */
+class Seat {
+public:
+    int seatId;
+    string row;
+    bool status;
+
+    Seat(int id, string r) {
+        seatId = id;
+        row = r;
+        status = false;
+    }
+
+    void displaySeat() {
+        cout << "Seat " << seatId << " (" << row << ") - "
+             << (status ? "Reserved" : "Available") << endl;
+    }
+
+    void reserve() {
+        status = true;
+    }
+
+    void release() {
+        status = false;
+    }
+};
+
+/* ===================== EVENT CLASS ===================== */
+class Event {
+public:
+    int eventId;
+    string title;
+    string date;
+    vector<Seat> seats;
+
+    Event(int id, string t, string d) {
+        eventId = id;
+        title = t;
+        date = d;
+
+        // Create 5 seats
+        for (int i = 1; i <= 5; i++) {
+            seats.push_back(Seat(i, "A"));
+        }
+    }
+
+    void displayEvent() {
+        cout << "\nEvent ID: " << eventId;
+        cout << "\nTitle: " << title;
+        cout << "\nDate: " << date << endl;
+    }
+
+    void showSeats() {
+        cout << "\n--- SEATS ---\n";
+        for (auto &s : seats) {
+            s.displaySeat();
+        }
+    }
+
+    bool bookSeat(int seatId) {
+        for (auto &s : seats) {
+            if (s.seatId == seatId && !s.status) {
+                s.reserve();
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+/* ===================== USER CLASS ===================== */
+ class User {
+protected:
+    int id;
+    string name;
+    string email;
+
+public:
+    void login() {
+        cout << "\n--- USER LOGIN ---\n";
+        cout << "Enter ID: ";
+        cin >> id;
+        cin.ignore();
+
+        cout << "Enter Name: ";
+        getline(cin, name);
+
+        cout << "Enter Email: ";
+        getline(cin, email);
+
+        cout << "\nLogin Successful!\n";
+    }
+
+    void logout() {
+        cout << "\nUser logged out successfully.\n";
+    }
+
+    void getDetails() {
+        cout << "\n--- USER DETAILS ---\n";
+        cout << "ID: " << id << endl;
+        cout << "Name: " << name << endl;
+        cout << "Email: " << email << endl;
+    }
+
+    // ? ADD THIS
+    int getId() {
+        return id;
+    }
+};
+
+/* ===================== ADMIN CLASS ===================== */
+class Admin : public User {
+public:
+    void manageEvents() {
+        cout << "\n(Admin) Managing Events...\n";
+    }
+
+    void viewReports(vector<Event> &events) {
+        cout << "\n--- REPORTS ---\n";
+        cout << "Total Events: " << events.size() << endl;
+    }
+
+    // ADD EVENT FUNCTION (FIXED)
+    void addEvent(vector<Event> &events) {
+        int id;
+        string title, date;
+
+        cout << "\n--- ADD EVENT ---\n";
+
+        cout << "Enter Event ID: ";
+        cin >> id;
+        cin.ignore();
+
+        cout << "Enter Event Title: ";
+        getline(cin, title);
+
+        cout << "Enter Event Date: ";
+        getline(cin, date);
+
+        events.push_back(Event(id, title, date));
+
+        cout << "\nEvent Added Successfully!\n";
+    }
+};
+
+/* ===================== BOOKING CLASS ===================== */
+class Booking {
+public:
+    int bookingId;
+    int userId;
+    int eventId;
+    bool status;
+
+    Booking() {
+        status = false;
+    }
+
+    void create(int bId, int uId, int eId) {
+        bookingId = bId;
+        userId = uId;
+        eventId = eId;
+        status = true;
+
+        cout << "\nBooking Created Successfully!\n";
+        cout << "Booking ID: " << bookingId << endl;
+    }
+
+    void cancel() {
+        status = false;
+        cout << "\nBooking Cancelled.\n";
+    }
+};
+
+/* ===================== TICKET CLASS ===================== */
+class Ticket {
+public:
+    int ticketId;
+    string qrCode;
+
+    void generate(int id) {
+        ticketId = id;
+        qrCode = "QR-" + to_string(id);
+
+        cout << "\nTicket Generated!\n";
+        cout << "Ticket ID: " << ticketId << endl;
+        cout << "QR Code: " << qrCode << endl;
+    }
+};
+
+/* ===================== MAIN FUNCTION ===================== */
+int main() {
+    User user;
+    Admin admin;
+
+    vector<Event> events;   // ALL EVENTS STORED HERE
+    Booking booking;
+    Ticket ticket;
+
+    int choice;
+
+    while (true) {
+
+        cout << "\n========== EVENTGO SYSTEM ==========\n";
+        cout << "1. Login User\n";
+        cout << "2. View User Details\n";
+        cout << "3. Add Event (Admin)\n";
+        cout << "4. View Events\n";
+        cout << "5. View Seats (First Event)\n";
+        cout << "6. Book Seat\n";
+        cout << "7. Generate Ticket\n";
+        cout << "8. Cancel Booking\n";
+        cout << "9. Admin Reports\n";
+        cout << "10. Logout\n";
+        cout << "0. Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        /* ===================== MENU ===================== */
+
+        if (choice == 1) {
+            user.login();
+        }
+
+        else if (choice == 2) {
+            user.getDetails();
+        }
+
+        else if (choice == 3) {
+            admin.addEvent(events);
+        }
+
+        else if (choice == 4) {
+            if (events.empty()) {
+                cout << "\nNo events available!\n";
+            } else {
+                for (auto &e : events) {
+                    e.displayEvent();
+                }
+            }
+        }
+
+        else if (choice == 5) {
+            if (!events.empty()) {
+                events[0].showSeats();
+            } else {
+                cout << "\nNo events available!\n";
+            }
+        }
+
+        else if (choice == 6) {
+            if (!events.empty()) {
+                int seatId;
+                cout << "Enter Seat ID: ";
+                cin >> seatId;
+
+                if (events[0].bookSeat(seatId)) {
+                    booking.create(1, user.getId(), events[0].eventId);
+                } else {
+                    cout << "Seat not available!\n";
+                }
+            }
+        }
+
+        else if (choice == 7) {
+            ticket.generate(1001);
+        }
+
+        else if (choice == 8) {
+            booking.cancel();
+        }
+
+        else if (choice == 9) {
+            admin.viewReports(events);
+        }
+
+        else if (choice == 10) {
+            user.logout();
+        }
+
+        else if (choice == 0) {
+            cout << "\nExiting system...\n";
+            break;
+        }
+
+        else {
+            cout << "Invalid choice!\n";
+        }
+    }
+
+    return 0;
+}
